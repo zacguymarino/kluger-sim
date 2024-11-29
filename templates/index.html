@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sim Stuff</title>
+    <!-- <script type="module" src="{{ url_for('static', filename='sim.js') }}"></script> -->
+    <script defer type="module" src="{{ url_for('static', filename='main.js') }}"></script>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <div id="loadAnimation" class="w-full h-full z-1 justify-center items-center fixed" style="display:none;">
+        <div class="ball flex justify-center items-center">
+            <div class="ballCenter"></div>
+        </div>
+    </div>
+    <div class="w-full flex justify-between">
+        <div class="w-2-3">
+            <h3>Pools</h3>
+            <button id="addPool">Add Pool</button>
+            <div id="pools"></div>
+            <h3>Storage</h3>
+            <button id="addStorage">Add Storage</button>
+            <div id="storage"></div>
+            <h3>Variables</h3>
+            <button id="addVariable">Add Variable</button>
+            <div id="variables"></div>
+            <h3>Pipelines</h3>
+            <button id="addPipeline">Add Pipeline</button>
+            <div id="pipelines"></div>
+            <h3>End condition</h3>
+            <div id="endConditionContainer" class="mh-50px border endCondition"></div>
+            <h3>Output</h3>
+            <h4>Storage Outputs</h4>
+            <button id="addStorageOutput">Add Storage</button>
+            <div id="storageOutputs"></div>
+            <h4>Variable Outputs</h4>
+            <button id="addVariableOutput">Add Variable</button>
+            <div id="variableOutputs"></div>
+            <h3>Simulate</h3>
+            <button id="simulate">Simulate</button>
+        </div>
+        <div class="w-1-3 fixed right-0">
+            <h3>Pipeline Functions</h3>
+            <div>
+                <h4>Pool functions</h4>
+                <div class="draggable-item" draggable="true" data-info="PF_randomPoolElement">Random Pool Element (RPE)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_specificPoolElement">Specific Pool Element (SPE)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_resetPool">Reset Pool (RP)</div>
+                <h4>Staged functions</h4>
+                <div class="draggable-item" draggable="true" data-info="PF_ifStagedIsValue">If Staged is Value (IfSV)</div>
+                <h4>Storage functions</h4>
+                <div class="draggable-item" draggable="true" data-info="PF_appendToStorage">Append to Storage (AS)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_getFirstElement">Get First Element (GFE)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_getLastElement">Get Last Element (GLE)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_getNthElement">Get Nth Element (GNE)</div>
+                <h4>Variable functions</h4>
+                <div class="draggable-item" draggable="true" data-info="PF_addToVariable">Add to Variable (AV)</div>
+            </div>
+            <h3>End Conditions</h3>
+            <div>
+                <div class="draggable-item" draggable="true" data-info="EC_mainPipelineRuns">Main Pipeline Runs</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

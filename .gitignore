@@ -1,0 +1,6 @@
+static/sim.js
+static/sim.wasm
+cpp/sim.js
+cpp/sim.wasm
+.vscode/
+__pycache__/
