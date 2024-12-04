@@ -65,7 +65,8 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
     int type = functionTable[function["type"]];
 
     std::string poolName;
-    std::vector<std::string> pool;
+    //std::vector<std::string> pool;
+    std::map<std::string, std::vector<std::string>>& pools = copyStruct.pools;
     std::string replace;
     std::string poolElement;
     std::string storageName;
@@ -83,28 +84,28 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
         case 0:
             poolName = function["pool"];
             replace = function["replace"];
-            pool = copyStruct.pools[poolName];
-            randomIndex = randomInt(pool.size() - 1);
-            copyStruct.staged = pool[randomIndex];
-            if (replace == "false") copyStruct.pools[poolName].erase(copyStruct.pools[poolName].begin() + randomIndex);
+            //std::vector<std::string>& RPEpool = copyStruct.pools[poolName];
+            randomIndex = randomInt(pools[poolName].size() - 1);
+            copyStruct.staged = pools[poolName][randomIndex];
+            if (replace == "false") pools[poolName].erase(pools[poolName].begin() + randomIndex);
             break;
         case 1:
             poolName = function["pool"];
             replace = function["replace"];
-            pool = copyStruct.pools[poolName];
+            //std::vector<std::string>& SPEpool = copyStruct.pools[poolName];
             poolElement = function["element"];
-            it = std::find(pool.begin(), pool.end(), poolElement);
-            if (it != pool.end()) {
-                foundIndex = std::distance(pool.begin(), it);
-                copyStruct.staged = pool[foundIndex];
-                if (replace == "false") copyStruct.pools[poolName].erase(copyStruct.pools[poolName].begin() + foundIndex);
+            it = std::find(pools[poolName].begin(), pools[poolName].end(), poolElement);
+            if (it != pools[poolName].end()) {
+                foundIndex = std::distance(pools[poolName].begin(), it);
+                copyStruct.staged = pools[poolName][foundIndex];
+                if (replace == "false") pools[poolName].erase(pools[poolName].begin() + foundIndex);
             } else {
                 copyStruct.error = "Specific element not found in specified pool.";
             }
             break;
         case 2:
             poolName = function["pool"];
-            copyStruct.pools[poolName] = simStruct.pools[poolName];
+            pools[poolName] = simStruct.pools[poolName];
             break;
         case 3:
             storageName = function["storage"];

@@ -58,6 +58,90 @@ draggableItems.forEach(item => {
 /////Sim Tool Functions/////
 ////////////////////////////
 
+const interpolatedPool = function(newIdNumber) {
+    //Interpolated pool container
+    let interpolatedContainer = document.createElement("div");
+    interpolatedContainer.setAttribute("id", `poolType-${newIdNumber}`);
+    interpolatedContainer.setAttribute("data-pooltype", "interpolated");
+    //Min/Max and Steps container
+    let minMaxStepsContainer = document.createElement("div");
+    //Min label
+    let minLabel = document.createElement("label");
+    minLabel.textContent = "Min: ";
+    //Min input
+    let minInput = document.createElement("input");
+    minInput.setAttribute("type", "number");
+    minInput.setAttribute("id", `interpolatedMin-${newIdNumber}`);
+    minInput.classList.add("w-50px");
+    //Max label
+    let maxLabel = document.createElement("label");
+    maxLabel.textContent = "Max: ";
+    //Max input
+    let maxInput = document.createElement("input");
+    maxInput.setAttribute("type", "number");
+    maxInput.setAttribute("id", `interpolatedMax-${newIdNumber}`);
+    maxInput.classList.add("w-50px");
+    //Steps label
+    let stepsLabel = document.createElement("label");
+    stepsLabel.textContent = "Steps: ";
+    //Steps input
+    let stepsInput = document.createElement("input");
+    stepsInput.setAttribute("type", "number");
+    stepsInput.setAttribute("id", `interpolatedSteps-${newIdNumber}`);
+    stepsInput.classList.add("w-50px");
+    //Decimals label
+    let decimalsLabel = document.createElement("label");
+    decimalsLabel.textContent = "Decimals: ";
+    //Decimals input
+    let decimalsInput = document.createElement("input");
+    decimalsInput.setAttribute("type", "number");
+    decimalsInput.setAttribute("id", `interpolatedDecimals-${newIdNumber}`);
+    decimalsInput.classList.add("w-50px");
+    //Put it all together
+    minMaxStepsContainer.appendChild(minLabel);
+    minMaxStepsContainer.appendChild(minInput);
+    minMaxStepsContainer.appendChild(maxLabel);
+    minMaxStepsContainer.appendChild(maxInput);
+    minMaxStepsContainer.appendChild(stepsLabel);
+    minMaxStepsContainer.appendChild(stepsInput);
+    minMaxStepsContainer.appendChild(decimalsLabel);
+    minMaxStepsContainer.appendChild(decimalsInput);
+    interpolatedContainer.appendChild(minMaxStepsContainer);
+
+    return interpolatedContainer;
+}
+
+const manualPool = function(newIdNumber) {
+    //Manual pool container
+    let manualContainer = document.createElement("div");
+    manualContainer.setAttribute("id", `poolType-${newIdNumber}`);
+    manualContainer.setAttribute("data-pooltype", "manual");
+    //Pool size container
+    let poolSizeContainer = document.createElement("div");
+    //Pool size label
+    let poolSizeLabel = document.createElement("label");
+    poolSizeLabel.textContent = "Pool size: ";
+    //Pool size input
+    let poolSizeInput = document.createElement("input");
+    poolSizeInput.setAttribute("type", "number");
+    poolSizeInput.setAttribute("min", "0");
+    poolSizeInput.setAttribute("id", `poolSize-${newIdNumber}`);
+    poolSizeInput.classList.add("w-50px");
+    poolSizeInput.addEventListener("change", (event) => {
+        updatePoolSize(event, newIdNumber);
+    })
+    //Pool element container
+    let elementContainer = document.createElement('div');
+    elementContainer.setAttribute('id', `poolElements-${newIdNumber}`);
+    //Put it all together
+    poolSizeContainer.appendChild(poolSizeLabel);
+    poolSizeContainer.appendChild(poolSizeInput);
+    poolSizeContainer.appendChild(elementContainer);
+    manualContainer.appendChild(poolSizeContainer);
+
+    return manualContainer;
+}
+
 const addPool = function() {
     //Get unique ID for new pool
     let poolsContainer = document.getElementById("pools");
@@ -81,37 +165,55 @@ const addPool = function() {
     let poolNameInput = document.createElement("input");
     poolNameInput.setAttribute("type", "text");
     poolNameInput.setAttribute("id", `poolName-${newIdNumber}`);
-    //Pool size container
-    let poolSizeContainer = document.createElement("div");
-    //Pool size label
-    let poolSizeLabel = document.createElement("label");
-    poolSizeLabel.textContent = "Pool size: ";
-    //Pool size input
-    let poolSizeInput = document.createElement("input");
-    poolSizeInput.setAttribute("type", "number");
-    poolSizeInput.setAttribute("min", "0");
-    poolSizeInput.setAttribute("id", `poolSize-${newIdNumber}`);
-    poolSizeInput.addEventListener("change", (event) => {
-        updatePoolSize(event, newIdNumber);
+    //Pool type container
+    let poolTypeContainer = document.createElement("div");
+    //Pool type label
+    let poolTypeLabel = document.createElement("label");
+    poolTypeLabel.textContent = "Pool type: ";
+    //Pool type select/options
+    let poolTypeSelect = document.createElement("select");
+    poolTypeSelect.addEventListener("change", (event) => {
+        let type = event.target.value;
+        let newTypeContainer;
+        switch (type) {
+            case "manual":
+                newTypeContainer = manualPool(newIdNumber);
+                document.getElementById(`poolType-${newIdNumber}`).replaceWith(newTypeContainer);
+                break;
+            case "interpolated":
+                newTypeContainer = interpolatedPool(newIdNumber);
+                document.getElementById(`poolType-${newIdNumber}`).replaceWith(newTypeContainer);
+                break;
+            default:
+                break;
+        }
+
     })
+    let manualOption = document.createElement("option");
+    manualOption.value = "manual";
+    manualOption.text = "Manual";
+    let interpolatedOption = document.createElement("option");
+    interpolatedOption.value = "interpolated";
+    interpolatedOption.text = "Interpolated";
     //Remove pool button
     let removeButton = document.createElement('button');
     removeButton.textContent = "Remove Pool";
     removeButton.addEventListener("click", () => {
         document.getElementById(`pool-${newIdNumber}`).remove();
     })
-    //Pool element container
-    let elementContainer = document.createElement('div');
-    elementContainer.setAttribute('id', `poolElements-${newIdNumber}`);
+    //Use Manual pool by default
+    let manualPoolContainer = manualPool(newIdNumber);
     //Put it all together
     poolNameContainer.appendChild(poolNameLabel);
     poolNameContainer.appendChild(poolNameInput);
     newPoolContainer.appendChild(poolNameContainer);
-    poolSizeContainer.appendChild(poolSizeLabel);
-    poolSizeContainer.appendChild(poolSizeInput);
-    newPoolContainer.appendChild(poolSizeContainer);
+    poolTypeSelect.appendChild(manualOption);
+    poolTypeSelect.appendChild(interpolatedOption);
+    poolTypeContainer.appendChild(poolTypeLabel);
+    poolTypeContainer.appendChild(poolTypeSelect);
+    newPoolContainer.appendChild(poolTypeContainer);
     newPoolContainer.appendChild(removeButton);
-    newPoolContainer.appendChild(elementContainer);
+    newPoolContainer.appendChild(manualPoolContainer);
     poolsContainer.appendChild(newPoolContainer);
 }
 

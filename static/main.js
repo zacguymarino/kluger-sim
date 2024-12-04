@@ -190,14 +190,45 @@ const buildSimObject = function() {
     for (let i = 0; i < pools.length; i++) {
         let poolIdNumber = pools[i].id.match(/^[a-zA-Z]+-(\d+)$/)[1];
         let poolName = pools[i].querySelector(`#poolName-${poolIdNumber}`).value;
-        let poolSize = pools[i].querySelector(`#poolSize-${poolIdNumber}`).value;
-        let poolElements = document.getElementById(`poolElements-${poolIdNumber}`).children;
-        simObj.pools[poolName] = {
-            size: poolSize,
-            elements: []
-        }
-        for (let j = 0; j < poolElements.length; j++) {
-            simObj.pools[poolName].elements.push(poolElements[j].value);
+        let poolType = pools[i].querySelector(`#poolType-${poolIdNumber}`).dataset.pooltype;
+        let poolSize;
+        let poolElements;
+        let min;
+        let max;
+        let range;
+        let decimals;
+        switch (poolType) {
+            case "interpolated":
+                poolSize = Number(pools[i].querySelector(`#interpolatedSteps-${poolIdNumber}`).value);
+                min = Number(pools[i].querySelector(`#interpolatedMin-${poolIdNumber}`).value);
+                max = Number(pools[i].querySelector(`#interpolatedMax-${poolIdNumber}`).value);
+                decimals = Number(pools[i].querySelector(`#interpolatedDecimals-${poolIdNumber}`).value);
+                range = max - min;
+                poolElements = [];
+                for (let j = 0; j < poolSize; j++) {
+                    const value = min + (range * j) / (poolSize - 1);
+                    poolElements.push(value.toFixed(decimals).toString());
+                }
+                simObj.pools[poolName] = {
+                    size: poolSize,
+                    elements: poolElements,
+                    type: "interpolated"
+                }
+                break;
+            case "manual":
+                poolSize = pools[i].querySelector(`#poolSize-${poolIdNumber}`).value;
+                poolElements = document.getElementById(`poolElements-${poolIdNumber}`).children;
+                simObj.pools[poolName] = {
+                    size: poolSize,
+                    elements: [],
+                    type: "manual"
+                }
+                for (let j = 0; j < poolElements.length; j++) {
+                    simObj.pools[poolName].elements.push(poolElements[j].value);
+                }
+                break;
+            default:
+                break;
         }
     }
     //Add storage to sim object
