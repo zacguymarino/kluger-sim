@@ -5,6 +5,7 @@ const constructDraggableObjects = function(element) {
     let functionType = element.dataset.type;
     let object;
     let poolValue;
+    let pipelineValue;
     let valueValue;
     let replaceValue;
     let elementValue;
@@ -16,6 +17,15 @@ const constructDraggableObjects = function(element) {
     let maxValue;
     let runsValue;
     switch(functionType) {
+        case "RPL":
+            pipelineValue = element.querySelector(".pipelineToRun").value;
+            runsValue = element.querySelector(".pipelineRuns").value;
+            object = {
+                type: "RPL",
+                pipeline: pipelineValue,
+                runs: runsValue
+            };
+            break;
         case "RDB":
             minValue = element.querySelector(".randomMin").value;
             maxValue = element.querySelector(".randomMax").value;
@@ -131,6 +141,8 @@ const createDraggableElements = function(droppedItemData) {
     let replaceCheckbox;
     let valueLabel;
     let valueInput;
+    let pipelineLabel;
+    let pipelineInput;
     let truePipelineLabel;
     let truePipelineInput;
     let falsePipelineLabel;
@@ -145,6 +157,38 @@ const createDraggableElements = function(droppedItemData) {
     let runAmountLabel;
     let runAmountInput;
     switch(droppedItemData) {
+        case "PF_runPipeline":
+            //Function choice container
+            functionChoiceContainer = document.createElement("div");
+            functionChoiceContainer.setAttribute("data-type", "RPL");
+            //Function choice title
+            functionChoiceTitle = document.createElement("span");
+            functionChoiceTitle.textContent = "RPL: ";
+            functionChoiceTitle.classList.add("font-bold");
+            //Pipeline name label
+            pipelineLabel = document.createElement("label");
+            pipelineLabel.textContent = "Pipeline: ";
+            //Pipeline name input
+            pipelineInput = document.createElement("input");
+            pipelineInput.setAttribute("type", "text");
+            pipelineInput.classList.add("pipelineToRun");
+            //Pipeline runs label
+            valueLabel = document.createElement("label");
+            valueLabel.textContent = "Runs: ";
+            //Pipeline runs input
+            valueInput = document.createElement("input");
+            valueInput.setAttribute("type", "text");
+            valueInput.value = "1";
+            valueInput.classList.add("pipelineRuns");
+            valueInput.classList.add("w-50px");
+            //Put it together and assign to chosenFunction
+            functionChoiceContainer.appendChild(functionChoiceTitle);
+            functionChoiceContainer.appendChild(pipelineLabel);
+            functionChoiceContainer.appendChild(pipelineInput);
+            functionChoiceContainer.appendChild(valueLabel);
+            functionChoiceContainer.appendChild(valueInput);
+            chosenFunction = functionChoiceContainer;
+            break;
         case "PF_randomDecimalBetween":
             //Function choice container
             functionChoiceContainer = document.createElement("div");

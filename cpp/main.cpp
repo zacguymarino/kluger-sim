@@ -81,12 +81,13 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
         {"GNE", 6},
         {"IfSV", 7},
         {"AV", 8},
-        {"RDB", 9}
+        {"RDB", 9},
+        {"RPL", 10}
     };
     int type = functionTable[function["type"]];
 
+    std::string pipelineName;
     std::string poolName;
-    //std::vector<std::string> pool;
     std::map<std::string, PoolData>& pools = copyStruct.pools;
     std::string replace;
     std::string poolElement;
@@ -189,6 +190,15 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
             maxValue = std::stod(function["max"]);
             copyStruct.staged = std::to_string(randomDouble(minValue, maxValue));
             std::cout << copyStruct.staged << std::endl;
+            break;
+        case 10:
+            pipelineName = function["pipeline"];
+            value = function["runs"];
+            for (int i = 0; i < std::stoi(value); i++) {
+                for (int j = 0; j < copyStruct.pipelines[pipelineName].size(); j++) {
+                    copyStruct = pipelineFunctions(copyStruct.pipelines[pipelineName][j], copyStruct, simStruct);
+                }
+            }
             break;
         default:
             copyStruct.error = "An invalid function was found in the pipeline.";
