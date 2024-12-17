@@ -12,8 +12,19 @@ const constructDraggableObjects = function(element) {
     let variableValue;
     let trueValue;
     let falseValue;
+    let minValue;
+    let maxValue;
     let runsValue;
     switch(functionType) {
+        case "RDB":
+            minValue = element.querySelector(".randomMin").value;
+            maxValue = element.querySelector(".randomMax").value;
+            object = {
+                type: "RDB",
+                min: minValue,
+                max: maxValue
+            };
+            break;
         case "RPE":
             poolValue = element.querySelector(".poolElement").value;
             replaceValue = element.querySelector(".replaceElement").checked ? "true" : "false";
@@ -126,10 +137,46 @@ const createDraggableElements = function(droppedItemData) {
     let falsePipelineInput;
     let variableChoiceLabel;
     let variableChoiceInput;
+    let minLabel;
+    let maxLabel;
+    let minInput;
+    let maxInput;
 
     let runAmountLabel;
     let runAmountInput;
     switch(droppedItemData) {
+        case "PF_randomDecimalBetween":
+            //Function choice container
+            functionChoiceContainer = document.createElement("div");
+            functionChoiceContainer.setAttribute("data-type", "RDB");
+            //Function choice title
+            functionChoiceTitle = document.createElement("span");
+            functionChoiceTitle.textContent = "RDB: ";
+            functionChoiceTitle.classList.add("font-bold");
+            //Min label
+            minLabel = document.createElement("label");
+            minLabel.textContent = "Min: ";
+            //Min input
+            minInput = document.createElement("input");
+            minInput.setAttribute("type", "text");
+            minInput.classList.add("w-100px");
+            minInput.classList.add("randomMin");
+            //Max label
+            maxLabel = document.createElement("label");
+            maxLabel.textContent = "Max: ";
+            //Max Input
+            maxInput = document.createElement("input");
+            maxInput.setAttribute("type", "text");
+            maxInput.classList.add("w-100px");
+            maxInput.classList.add("randomMax");
+            //Put it together and assign to chosenFunction
+            functionChoiceContainer.appendChild(functionChoiceTitle);
+            functionChoiceContainer.appendChild(minLabel);
+            functionChoiceContainer.appendChild(minInput);
+            functionChoiceContainer.appendChild(maxLabel);
+            functionChoiceContainer.appendChild(maxInput);
+            chosenFunction = functionChoiceContainer;
+            break;
         case "PF_randomPoolElement":
             //Function choice container
             functionChoiceContainer = document.createElement("div");

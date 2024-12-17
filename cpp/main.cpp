@@ -59,6 +59,17 @@ int randomInt(int max) {
     return dist(gen); // Generate a random number.
 }
 
+double randomDouble(double min, double max) {
+    // Seed with a random device for true randomness.
+    static std::random_device rd;  
+    static std::mt19937 gen(rd()); // Mersenne Twister generator seeded with rd.
+
+    // Create a uniform distribution in the range [0, max].
+    std::uniform_real_distribution<double> dist(min, max);
+
+    return dist(gen); // Generate a random decimal
+}
+
 SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStruct copyStruct, SimStruct simStruct) {
     std::map<std::string, int> functionTable = {
         {"RPE", 0},
@@ -69,7 +80,8 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
         {"GLE", 5},
         {"GNE", 6},
         {"IfSV", 7},
-        {"AV", 8}
+        {"AV", 8},
+        {"RDB", 9}
     };
     int type = functionTable[function["type"]];
 
@@ -86,6 +98,8 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
     std::string falsePipelineName;
     std::string variableName;
     std::string variableValue;
+    double minValue;
+    double maxValue;
     std::vector<std::string> numList;
     std::string value;
     std::vector<std::string>::iterator it;
@@ -169,6 +183,12 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
             numList.push_back(variableValue);
             numList.push_back(value);
             copyStruct.variables[variableName]["value"] = addSubtract(numList, false);
+            break;
+        case 9:
+            minValue = std::stod(function["min"]);
+            maxValue = std::stod(function["max"]);
+            copyStruct.staged = std::to_string(randomDouble(minValue, maxValue));
+            std::cout << copyStruct.staged << std::endl;
             break;
         default:
             copyStruct.error = "An invalid function was found in the pipeline.";
