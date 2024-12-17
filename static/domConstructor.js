@@ -58,6 +58,23 @@ draggableItems.forEach(item => {
 /////Sim Tool Functions/////
 ////////////////////////////
 
+const addLookupTableInput = function(idNumber) {
+    let lookupTableContainer = document.getElementById(`poolTable-${idNumber}`);
+    let tableInputContainer = document.createElement("div");
+    tableInputContainer.setAttribute("id", `poolTableInputContainer-${idNumber}`);
+    let tableInputLabel = document.createElement("label");
+    tableInputLabel.textContent = "Table: ";
+    let tableInputInput = document.createElement("input");
+    tableInputInput.setAttribute("id", `poolTableName-${idNumber}`);
+    tableInputContainer.appendChild(tableInputLabel);
+    tableInputContainer.appendChild(tableInputInput);
+    lookupTableContainer.appendChild(tableInputContainer);
+}
+
+const removeLookupTableInput = function(idNumber) {
+    document.getElementById(`poolTableInputContainer-${idNumber}`).remove();
+}
+
 const interpolatedPool = function(newIdNumber) {
     //Interpolated pool container
     let interpolatedContainer = document.createElement("div");
@@ -116,6 +133,23 @@ const manualPool = function(newIdNumber) {
     let manualContainer = document.createElement("div");
     manualContainer.setAttribute("id", `poolType-${newIdNumber}`);
     manualContainer.setAttribute("data-pooltype", "manual");
+    //Lookup table container
+    let lookupTableContainer = document.createElement("div");
+    lookupTableContainer.setAttribute("id", `poolTable-${newIdNumber}`);
+    //Lookup table checkbox label
+    let lookupTableCheckboxLabel = document.createElement("label");
+    lookupTableCheckboxLabel.textContent = "Lookup table: ";
+    //Lookup table checkbox
+    let lookupTableCheckbox = document.createElement("input");
+    lookupTableCheckbox.setAttribute("type", "checkbox");
+    lookupTableCheckbox.setAttribute("id", `poolTableCheckbox-${newIdNumber}`);
+    lookupTableCheckbox.addEventListener("change", (event) => {
+        if (event.target.checked) {
+            addLookupTableInput(newIdNumber);
+        } else {
+            removeLookupTableInput(newIdNumber);
+        }
+    });
     //Pool size container
     let poolSizeContainer = document.createElement("div");
     //Pool size label
@@ -134,6 +168,9 @@ const manualPool = function(newIdNumber) {
     let elementContainer = document.createElement('div');
     elementContainer.setAttribute('id', `poolElements-${newIdNumber}`);
     //Put it all together
+    lookupTableContainer.appendChild(lookupTableCheckboxLabel);
+    lookupTableContainer.appendChild(lookupTableCheckbox);
+    manualContainer.appendChild(lookupTableContainer);
     poolSizeContainer.appendChild(poolSizeLabel);
     poolSizeContainer.appendChild(poolSizeInput);
     poolSizeContainer.appendChild(elementContainer);
@@ -217,7 +254,7 @@ const addPool = function() {
     poolsContainer.appendChild(newPoolContainer);
 }
 
-function updatePoolSize(event, idNumber) {
+const updatePoolSize = function(event, idNumber) {
     let size = event.currentTarget.value;
     let pool = document.getElementById(`poolElements-${idNumber}`);
     let poolInputs = pool.children;
@@ -238,6 +275,145 @@ function updatePoolSize(event, idNumber) {
     }
 }
 
+const addLookupTable = function() {
+    //Get unique ID for new table
+    let tableContainer = document.getElementById("lookupTables");
+    let lastChild = tableContainer.lastElementChild;
+    let newIdNumber = 1;
+    if (lastChild) {
+        let match = lastChild.id.match(/lookupTable-(\d+)/);
+        if (match) {
+            newIdNumber = parseInt(match[1], 10) + 1;
+        }
+    }
+    //Table container
+    let newTableContainer = document.createElement("div");
+    newTableContainer.setAttribute("id", `lookupTable-${newIdNumber}`);
+    //Table name container
+    let tableNameContainer = document.createElement("div");
+    //Table name label
+    let tableNameLabel = document.createElement("label");
+    tableNameLabel.textContent = "Table name: ";
+    //Table name input
+    let tableNameInput = document.createElement("input");
+    tableNameInput.setAttribute("type", "text");
+    tableNameInput.setAttribute("id", `lookupTableName-${newIdNumber}`);
+    //Quantity container
+    let elementQuantContainer = document.createElement("div");
+    //Quantity label
+    let elementQuantLabel = document.createElement("label");
+    elementQuantLabel.textContent = "Quantity: ";
+    //Quantity input
+    let elementQuantInput = document.createElement("input");
+    elementQuantInput.setAttribute("type", "number");
+    elementQuantInput.setAttribute("id", `lookupTableElQuant-${newIdNumber}`);
+    elementQuantInput.setAttribute("min", "0");
+    elementQuantInput.addEventListener("change", () => {
+        updateLookupTable(newIdNumber);
+    })
+    //Element size container
+    let elementSizeContainer = document.createElement("div");
+    //Element size label
+    let elementSizeLabel = document.createElement("label");
+    elementSizeLabel.textContent = "Element size: ";
+    //Element size input
+    let elementSizeInput = document.createElement("input");
+    elementSizeInput.setAttribute("type", "number");
+    elementSizeInput.setAttribute("id", `lookupTableElSize-${newIdNumber}`);
+    elementSizeInput.setAttribute("min", "2");
+    elementSizeInput.value = "2";
+    elementSizeInput.addEventListener("change", () => {
+        updateLookupTable(newIdNumber);
+    })
+    //Remove lookup table button
+    let removeButton = document.createElement('button');
+    removeButton.textContent = "Remove Table";
+    removeButton.addEventListener("click", () => {
+        document.getElementById(`lookupTable-${newIdNumber}`).remove();
+    })
+    //Value container
+    let valueContainer = document.createElement("div");
+    valueContainer.classList.add("mh-50px");
+    valueContainer.classList.add("border");
+    //Value table
+    let valueTable = document.createElement("table");
+    valueTable.setAttribute("id", `lookupTableValues-${newIdNumber}`);
+    valueTable.classList.add("border");
+    valueTable.classList.add("valueTable");
+    //Value table header row
+    let headerRow = document.createElement("tr");
+    //Value table key header
+    let keyHeader = document.createElement("th");
+    keyHeader.textContent = "Key";
+    //Value table values header
+    let valuesHeader = document.createElement("th");
+    valuesHeader.textContent = "Values";
+    valuesHeader.setAttribute("id", `lookupTableValuesHeader-${newIdNumber}`);
+    //Put it all together
+    tableNameContainer.appendChild(tableNameLabel);
+    tableNameContainer.appendChild(tableNameInput);
+    newTableContainer.appendChild(tableNameContainer);
+    elementQuantContainer.appendChild(elementQuantLabel);
+    elementQuantContainer.appendChild(elementQuantInput);
+    newTableContainer.appendChild(elementQuantContainer);
+    elementSizeContainer.appendChild(elementSizeLabel);
+    elementSizeContainer.appendChild(elementSizeInput);
+    newTableContainer.appendChild(elementSizeContainer);
+    newTableContainer.appendChild(removeButton);
+    headerRow.appendChild(keyHeader);
+    headerRow.appendChild(valuesHeader);
+    valueTable.appendChild(headerRow);
+    valueContainer.appendChild(valueTable);
+    newTableContainer.appendChild(valueContainer);
+    tableContainer.appendChild(newTableContainer);
+}
+
+const updateLookupTable = function(idNumber) {
+    let elementSize = Number(document.getElementById(`lookupTableElSize-${idNumber}`).value);
+    let quantity = Number(document.getElementById(`lookupTableElQuant-${idNumber}`).value);
+    let valueTable = document.getElementById(`lookupTableValues-${idNumber}`);
+    let tableRows = valueTable.children;
+    let existingRows = tableRows.length - 1;
+    //Update Values header span
+    let valuesHeader = document.getElementById(`lookupTableValuesHeader-${idNumber}`);
+    valuesHeader.setAttribute("colspan", `${elementSize}`);
+    //Update number of rows
+    if (quantity > existingRows) {
+        let difference = quantity - existingRows;
+        for (let i = 0; i < difference; i++) {
+            let newRow = document.createElement("tr");
+            valueTable.appendChild(newRow);
+        }
+    } else if (quantity < existingRows) {
+        let difference = existingRows - quantity;
+        for (let i = 0; i < difference; i++) {
+            valueTable.removeChild(tableRows[tableRows.length - 1]);
+        }
+    }
+    tableRows = valueTable.children;
+    //Update number of columns in each row
+    for (let i = 1; i < tableRows.length; i++) { //Start from 1 to account for headers
+        let columns = tableRows[i].children;
+        if (columns.length < elementSize + 1) { // +1 to account for key column
+            let difference = (elementSize + 1) - columns.length;
+            for (let j = 0; j < difference; j++) {
+                let newColumn = document.createElement("td");
+                let newInput = document.createElement("input");
+                newInput.setAttribute("type", "text");
+                newInput.classList.add("w-25px");
+                newInput.classList.add("tableInput");
+                newColumn.appendChild(newInput);
+                tableRows[i].appendChild(newColumn);
+            }
+        } else if (columns.length > elementSize + 1) {
+            let difference = columns.length - (elementSize + 1);
+            for (let j = 0; j < difference; j++) {
+                tableRows[i].removeChild(tableRows[i].children[tableRows[i].children.length - 1]);
+            }
+        }
+    }
+}
+
 const addStorage = function() {
     //Get unique ID for new storage
     let storageContainer = document.getElementById("storage");
@@ -251,7 +427,7 @@ const addStorage = function() {
     }
     //Storage container
     let newStorageContainer = document.createElement("div");
-    newStorageContainer.setAttribute('id', `storage-${newIdNumber}`);
+    newStorageContainer.setAttribute("id", `storage-${newIdNumber}`);
     //Storage name container
     let storageNameContainer = document.createElement("div");
     //Storage name label
@@ -460,6 +636,7 @@ const addPipeline = function() {
 
 export {
     addPool,
+    addLookupTable,
     addStorage,
     addVariable,
     addPipeline,

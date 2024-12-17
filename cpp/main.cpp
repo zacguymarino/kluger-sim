@@ -8,9 +8,18 @@
 #include "math.h"
 #include <emscripten/bind.h>
 
+struct PoolData {
+    //Pool elements
+    std::vector<std::string> elements;
+    //Connected Lookup Table
+    std::string table;
+};
+
 struct SimStruct {
     //pools: poolName: {attributes}
-    std::map<std::string, std::vector<std::string>> pools;
+    std::map<std::string, PoolData> pools;
+    //tables: tableName: {values}
+    std::map<std::string, std::map<std::string, std::vector<std::string>>> tables;
     //storage: storageName: {values}
     std::map<std::string, std::vector<std::string>> storage;
     //variables: variableName: {attributes}
@@ -66,7 +75,7 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
 
     std::string poolName;
     //std::vector<std::string> pool;
-    std::map<std::string, std::vector<std::string>>& pools = copyStruct.pools;
+    std::map<std::string, PoolData>& pools = copyStruct.pools;
     std::string replace;
     std::string poolElement;
     std::string storageName;
@@ -84,21 +93,19 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
         case 0:
             poolName = function["pool"];
             replace = function["replace"];
-            //std::vector<std::string>& RPEpool = copyStruct.pools[poolName];
-            randomIndex = randomInt(pools[poolName].size() - 1);
-            copyStruct.staged = pools[poolName][randomIndex];
-            if (replace == "false") pools[poolName].erase(pools[poolName].begin() + randomIndex);
+            randomIndex = randomInt(pools[poolName].elements.size() - 1);
+            copyStruct.staged = pools[poolName].elements[randomIndex];
+            if (replace == "false") pools[poolName].elements.erase(pools[poolName].elements.begin() + randomIndex);
             break;
         case 1:
             poolName = function["pool"];
             replace = function["replace"];
-            //std::vector<std::string>& SPEpool = copyStruct.pools[poolName];
             poolElement = function["element"];
-            it = std::find(pools[poolName].begin(), pools[poolName].end(), poolElement);
-            if (it != pools[poolName].end()) {
-                foundIndex = std::distance(pools[poolName].begin(), it);
-                copyStruct.staged = pools[poolName][foundIndex];
-                if (replace == "false") pools[poolName].erase(pools[poolName].begin() + foundIndex);
+            it = std::find(pools[poolName].elements.begin(), pools[poolName].elements.end(), poolElement);
+            if (it != pools[poolName].elements.end()) {
+                foundIndex = std::distance(pools[poolName].elements.begin(), it);
+                copyStruct.staged = pools[poolName].elements[foundIndex];
+                if (replace == "false") pools[poolName].elements.erase(pools[poolName].elements.begin() + foundIndex);
             } else {
                 copyStruct.error = "Specific element not found in specified pool.";
             }
@@ -240,10 +247,17 @@ EMSCRIPTEN_BINDINGS(SimModule) {
     emscripten::register_map<std::string, std::map<std::string, std::string>>("MapStringMapStringString");
     emscripten::register_vector<std::map<std::string, std::string>>("VectorMapStringString");
     emscripten::register_map<std::string, std::vector<std::map<std::string, std::string>>>("MapStringVectorMapStringString");
+    emscripten::register_map<std::string, std::map<std::string, std::vector<std::string>>>("MapStringMapStringVectorString");
+    emscripten::register_map<std::string, PoolData>("MapStringPoolData");
 
+    emscripten::class_<PoolData>("PoolData")
+        .constructor<>()
+        .property("elements", &PoolData::elements)
+        .property("table", &PoolData::table);
     emscripten::class_<SimStruct>("SimStruct")
         .constructor<>()
         .property("pools", &SimStruct::pools)
+        .property("tables", &SimStruct::tables)
         .property("storage", &SimStruct::storage)
         .property("variables", &SimStruct::variables)
         .property("pipelines", &SimStruct::pipelines)

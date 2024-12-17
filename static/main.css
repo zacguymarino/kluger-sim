@@ -18,8 +18,8 @@
     position: fixed;
 }
 
-.right-0 {
-    right: 0px;
+.relative {
+    position: relative;
 }
 
 .w-full {
@@ -62,8 +62,16 @@
     border: 1px solid black;
 }
 
+.borderRight {
+    border-right: 1px solid black;
+}
+
 .font-bold {
     font-weight: 700;
+}
+
+table.valueTable td:first-child {
+    border-right: 2px solid black;
 }
 
 .ball {

@@ -1,6 +1,6 @@
 import SimModule from './sim.js'
 import { constructDraggableObjects } from './draggableElements.js';
-import { addPool, addStorage, addVariable, addPipeline, addStorageOutput, addVariableOutput } from './domConstructor.js';
+import { addPool, addLookupTable, addStorage, addVariable, addPipeline, addStorageOutput, addVariableOutput } from './domConstructor.js';
 
 SimModule().then((simModule) => {
 
@@ -20,43 +20,49 @@ simulateButton.addEventListener('click', () => {
         buildSimObject();
         loading.style.display = "none";
     }, 0);
-})
+});
 
 //Add pool button
 const addPoolButton = document.getElementById("addPool");
 addPoolButton.addEventListener("click", () => {
     addPool();
-})
+});
+
+//Add Lookup table button
+const addLookupTableButton = document.getElementById("addLookupTable");
+addLookupTableButton.addEventListener("click", () => {
+    addLookupTable();
+});
 
 //Add storage button
 const addStorageButton = document.getElementById("addStorage");
 addStorageButton.addEventListener("click", () => {
     addStorage();
-})
+});
 
 //Add variable button
 const addVariableButton = document.getElementById("addVariable");
 addVariableButton.addEventListener("click", () => {
     addVariable();
-})
+});
 
 //Add pipeline button
 const addPipelineButton = document.getElementById("addPipeline");
 addPipelineButton.addEventListener("click", () => {
     addPipeline();
-})
+});
 
 //Add storage output button
 const addStorageOutputButton = document.getElementById("addStorageOutput");
 addStorageOutputButton.addEventListener("click", () => {
     addStorageOutput();
-})
+});
 
 //Add variable output button
 const addVariableOutputButton = document.getElementById("addVariableOutput");
 addVariableOutputButton.addEventListener("click", () => {
     addVariableOutput();
-})
+});
 
 ////////////////////////////////////////
 /////Build/Run Simulation Functions/////
@@ -93,15 +99,36 @@ const runSimulation = function() {
 const buildSimStruct = function() {
     //Pools conversion
     let poolsObject = simObj.pools;
-    let poolMap = new simModule.MapStringVectorString;
+    let poolMap = new simModule.MapStringPoolData;
     Object.keys(poolsObject).forEach(key => {
-        let poolVector = new simModule.VectorString;
+        let poolData = new simModule.PoolData();
+        let elementVector = new simModule.VectorString;
         for (let i = 0; i < poolsObject[key].elements.length; i++) {
-            poolVector.push_back(poolsObject[key].elements[i]);
+            elementVector.push_back(poolsObject[key].elements[i]);
         }
-        poolMap.set(key, poolVector);
+        let poolTable = poolsObject[key].table;
+        poolData.elements = elementVector;
+        poolData.table = poolTable;
+        poolMap.set(key, poolData);
     });
     simStruct.pools = poolMap;
+
+    //Tables conversion
+    let tablesObject = simObj.tables;
+    let tablesMap = new simModule.MapStringMapStringVectorString;
+    Object.keys(tablesObject).forEach(tableKey => {
+        let valueObject = tablesObject[tableKey].values;
+        let valueMap = new simModule.MapStringVectorString;
+        Object.keys(valueObject).forEach(valueKey => {
+            let valueVector = new simModule.VectorString;
+            for (let i = 0; i < valueObject[valueKey].length; i++) {
+                valueVector.push_back(valueObject[valueKey][i]);
+            }
+            valueMap.set(valueKey, valueVector);
+        })
+        tablesMap.set(tableKey, valueMap);
+    })
+    simStruct.tables = tablesMap;
 
     //Storage conversion
     let storageObject = simObj.storage;
@@ -175,6 +202,7 @@ const buildSimStruct = function() {
 const buildSimObject = function() {
     simObj = {
         pools: {},
+        tables: {},
         storage: {},
         variables: {},
         pipelines: {},
@@ -191,6 +219,7 @@ const buildSimObject = function() {
         let poolIdNumber = pools[i].id.match(/^[a-zA-Z]+-(\d+)$/)[1];
         let poolName = pools[i].querySelector(`#poolName-${poolIdNumber}`).value;
         let poolType = pools[i].querySelector(`#poolType-${poolIdNumber}`).dataset.pooltype;
+        let poolTableName = "";
         let poolSize;
         let poolElements;
         let min;
@@ -212,16 +241,21 @@ const buildSimObject = function() {
                 simObj.pools[poolName] = {
                     size: poolSize,
                     elements: poolElements,
-                    type: "interpolated"
+                    type: "interpolated",
+                    table: poolTableName
                 }
                 break;
             case "manual":
                 poolSize = pools[i].querySelector(`#poolSize-${poolIdNumber}`).value;
                 poolElements = document.getElementById(`poolElements-${poolIdNumber}`).children;
+                if (pools[i].querySelector(`#poolTableCheckbox-${poolIdNumber}`).checked) {
+                    poolTableName = pools[i].querySelector(`#poolTableName-${poolIdNumber}`).value;
+                }
                 simObj.pools[poolName] = {
                     size: poolSize,
                     elements: [],
-                    type: "manual"
+                    type: "manual",
+                    table: poolTableName
                 }
                 for (let j = 0; j < poolElements.length; j++) {
                     simObj.pools[poolName].elements.push(poolElements[j].value);
@@ -229,6 +263,30 @@ const buildSimObject = function() {
                 break;
             default:
                 break;
+        }
+    }
+    //Add tables to sim object
+    let tables = document.getElementById("lookupTables").children;
+    for (let i = 0; i < tables.length; i++) {
+        let tableIdNumber = tables[i].id.match(/^[a-zA-Z]+-(\d+)$/)[1];
+        let tableName = tables[i].querySelector(`#lookupTableName-${tableIdNumber}`).value;
+        let elSize = tables[i].querySelector(`#lookupTableElSize-${tableIdNumber}`).value;
+        let quantity = tables[i].querySelector(`#lookupTableElQuant-${tableIdNumber}`).value;
+        let valuesTable = tables[i].querySelector(`#lookupTableValues-${tableIdNumber}`);
+        simObj.tables[tableName] = {};
+        simObj.tables[tableName]["size"] = elSize.toString();
+        simObj.tables[tableName]["quantity"] = quantity.toString();
+        simObj.tables[tableName]["values"] = {};
+        for (let j = 1; j < valuesTable.children.length; j++) { //Start at 1 to skip headers row
+            let row = valuesTable.children[j];
+            for (let k = 0; k < row.children.length; k++) {
+                let inputValue = row.children[k].querySelector(".tableInput").value;
+                if (k == 0) { //set key
+                    simObj.tables[tableName]["values"][inputValue] = [];
+                } else { //add value
+                    simObj.tables[tableName]["values"][row.children[0].querySelector(".tableInput").value].push(inputValue);
+                }
+            }
         }
     }
     //Add storage to sim object
