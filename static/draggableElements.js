@@ -16,7 +16,118 @@ const constructDraggableObjects = function(element) {
     let minValue;
     let maxValue;
     let runsValue;
+    let inputOneTarget;
+    let inputTwoTarget;
+    let targetTarget;
+    let inputOneInput;
+    let inputOneVariable;
+    let inputOneStorage;
+    let inputOneStorageIndex;
+    let inputTwoInput;
+    let inputTwoVariable;
+    let inputTwoStorage;
+    let inputTwoStorageIndex;
+    let targetVariable;
+    let targetStorage;
+    let targetStorageIndex;
     switch(functionType) {
+        case "ADD":
+            inputOneTarget = element.querySelector(".inputOne").value;
+            inputTwoTarget = element.querySelector(".inputTwo").value;
+            targetTarget = element.querySelector(".target").value;
+            switch (inputOneTarget) {
+                case "input":
+                    inputOneInput = element.querySelector(".inputOneContainer").querySelector(".inputInput").value;
+                    inputOneVariable = "";
+                    inputOneStorage = "";
+                    inputOneStorageIndex = "";
+                    break;
+                case "staged":
+                    inputOneInput = "";
+                    inputOneVariable = "";
+                    inputOneStorage = "";
+                    inputOneStorageIndex = "";
+                    break;
+                case "variable":
+                    inputOneInput = "";
+                    inputOneVariable = element.querySelector(".inputOneContainer").querySelector(".variableInput").value;
+                    inputOneStorage = "";
+                    inputOneStorageIndex = "";
+                    break;
+                case "storage":
+                    inputOneInput = "";
+                    inputOneVariable = "";
+                    inputOneStorage = element.querySelector(".inputOneContainer").querySelector(".storageInput").value;
+                    inputOneStorageIndex = element.querySelector(".inputOneContainer").querySelector(".storageIndexInput").value;
+                    break;
+                default:
+                    break;
+            }
+            switch (inputTwoTarget) {
+                case "input":
+                    inputTwoInput = element.querySelector(".inputTwoContainer").querySelector(".inputInput").value;
+                    inputTwoVariable = "";
+                    inputTwoStorage = "";
+                    inputTwoStorageIndex = "";
+                    break;
+                case "staged":
+                    inputTwoInput = "";
+                    inputTwoVariable = "";
+                    inputTwoStorage = "";
+                    inputTwoStorageIndex = "";
+                    break;
+                case "variable":
+                    inputTwoInput = "";
+                    inputTwoVariable = element.querySelector(".inputTwoContainer").querySelector(".variableInput").value;
+                    inputTwoStorage = "";
+                    inputTwoStorageIndex = "";
+                    break;
+                case "storage":
+                    inputTwoInput = "";
+                    inputTwoVariable = "";
+                    inputTwoStorage = element.querySelector(".inputTwoContainer").querySelector(".storageInput").value;
+                    inputTwoStorageIndex = element.querySelector(".inputTwoContainer").querySelector(".storageIndexInput").value;
+                    break;
+                default:
+                    break;
+            }
+            switch (targetTarget) {
+                case "staged":
+                    targetVariable = "";
+                    targetStorage = "";
+                    targetStorageIndex = "";
+                    break;
+                case "variable":
+                    targetVariable = element.querySelector(".targetContainer").querySelector(".targetVariable").value;
+                    targetStorage = "";
+                    targetStorageIndex = "";
+                    break;
+                case "storage":
+                    targetVariable = "";
+                    targetStorage = element.querySelector(".targetContainer").querySelector(".targetStorage").value;
+                    targetStorageIndex = element.querySelector(".targetContainer").querySelector(".targetStorageIndex").value;
+                    break;
+                default:
+                    break;
+            }
+            object = {
+                type: "ADD",
+                inputOneTarget: inputOneTarget,
+                inputTwoTarget: inputTwoTarget,
+                targetTarget: targetTarget,
+                inputOneInput: inputOneInput,
+                inputOneVariable: inputOneVariable,
+                inputOneStorage: inputOneStorage,
+                inputOneStorageIndex: inputOneStorageIndex,
+                inputTwoInput: inputTwoInput,
+                inputTwoVariable: inputTwoVariable,
+                inputTwoStorage: inputTwoStorage,
+                inputTwoStorageIndex: inputTwoStorageIndex,
+                targetVariable: targetVariable,
+                targetStorage: targetStorage,
+                targetStorageIndex: targetStorageIndex
+            };
+            break;
         case "RPL":
             pipelineValue = element.querySelector(".pipelineToRun").value;
             runsValue = element.querySelector(".pipelineRuns").value;
@@ -126,6 +237,154 @@ const constructDraggableObjects = function(element) {
     return object;
 };
 
+const updateMathTargetSelection = function(choice, parent) {
+    let targetElement = document.createElement("div");
+    let label1;
+    let label2;
+    let input1;
+    let input2;
+    parent.innerHTML = "";
+    switch (choice) {
+        case "staged":
+            label1 = document.createElement("label");
+            label1.textContent = "Target: Staged";
+            targetElement.appendChild(label1);
+            break;
+        case "variable":
+            label1 = document.createElement("label");
+            label1.textContent = "Var: ";
+            input1 = document.createElement("input");
+            input1.setAttribute("type", "text");
+            input1.classList.add("w-100px");
+            input1.classList.add("targetVariable");
+            targetElement.appendChild(label1);
+            targetElement.appendChild(input1);
+            break;
+        case "storage":
+            label1 = document.createElement("label");
+            label1.textContent = "Strg: ";
+            input1 = document.createElement("input");
+            input1.setAttribute("type", "text");
+            input1.classList.add("w-100px");
+            input1.classList.add("targetStorage");
+            label2 = document.createElement("label");
+            label2.textContent = "Index: ";
+            input2 = document.createElement("input");
+            input2.setAttribute("type", "number");
+            input2.setAttribute("min", "0");
+            input2.value = "0";
+            input2.classList.add("w-50px");
+            input2.classList.add("targetStorageIndex");
+            targetElement.appendChild(label1);
+            targetElement.appendChild(input1);
+            targetElement.appendChild(label2);
+            targetElement.appendChild(input2);
+            break;
+        default:
+            break;
+    }
+    parent.appendChild(targetElement);
+}
+
+const updateMathInputSelection = function(choice, parent) {
+    let inputElement = document.createElement("div");
+    let label1;
+    let label2;
+    let input1;
+    let input2;
+    parent.innerHTML = "";
+    switch (choice) {
+        case "input":
+            label1 = document.createElement("label");
+            label1.textContent = "Input: ";
+            input1 = document.createElement("input");
+            input1.setAttribute("type", "text");
+            input1.classList.add("w-50px");
+            input1.classList.add("inputInput");
+            inputElement.appendChild(label1);
+            inputElement.appendChild(input1);
+            break;
+        case "staged":
+            label1 = document.createElement("label");
+            label1.textContent ="Input: Staged";
+            inputElement.appendChild(label1);
+            break;
+        case "variable":
+            label1 = document.createElement("label");
+            label1.textContent = "Var: ";
+            input1 = document.createElement("input")
+            input1.setAttribute("type", "text");
+            input1.classList.add("w-100px");
+            input1.classList.add("variableInput");
+            inputElement.appendChild(label1);
+            inputElement.appendChild(input1);
+            break;
+        case "storage":
+            label1 = document.createElement("label");
+            label1.textContent = "Strg: ";
+            input1 = document.createElement("input");
+            input1.setAttribute("type", "text");
+            input1.classList.add("w-100px");
+            input1.classList.add("storageInput");
+            label2 = document.createElement("label");
+            label2.textContent = "Index: ";
+            input2 = document.createElement("input");
+            input2.setAttribute("type", "number");
+            input2.setAttribute("min", "0");
+            input2.value = "0";
+            input2.classList.add("w-50px");
+            input2.classList.add("storageIndexInput");
+            inputElement.appendChild(label1);
+            inputElement.appendChild(input1);
+            inputElement.appendChild(label2);
+            inputElement.appendChild(input2);
+            break;
+        default:
+            break;
+    }
+    parent.appendChild(inputElement);
+}
+
+const createMathSelect = function(className) {
+    let select = document.createElement("select");
+    select.classList.add(className);
+    let option1 = document.createElement("option");
+    let option2 = document.createElement("option");
+    let option3 = document.createElement("option");
+    let option4 = document.createElement("option");
+    option1.value = "input";
+    option1.text = "Input";
+    option2.value = "staged";
+    option2.text = "Staged";
+    option3.value = "variable";
+    option3.text = "Variable";
+    option4.value = "storage";
+    option4.text = "Storage";
+    select.appendChild(option1);
+    select.appendChild(option2);
+    select.appendChild(option3);
+    select.appendChild(option4);
+    return select;
+}
+
+const createTargetSelect = function() {
+    let select = document.createElement("select");
+    select.classList.add("target");
+    let option1 = document.createElement("option");
+    let option2 = document.createElement("option");
+    let option3 = document.createElement("option");
+    option1.value = "staged";
+    option1.text = "Staged";
+    option2.value = "variable";
+    option2.text = "Variable";
+    option3.value = "storage";
+    option3.text = "Storage";
+    select.appendChild(option1);
+    select.appendChild(option2);
+    select.appendChild(option3);
+    return select;
+}
+
 const createDraggableElements = function(droppedItemData) {
     //Handle each type of function
     let chosenFunction = document.createElement("div"); //default node - should change in switch statement
@@ -153,10 +412,86 @@ const createDraggableElements = function(droppedItemData) {
     let maxLabel;
     let minInput;
     let maxInput;
+    let inputOneLabel;
+    let inputTwoLabel;
+    let targetLabel;
+    let inputOne;
+    let inputTwo;
+    let targetInput;
+    let container1;
+    let container2;
+    let container3;
+    let container4;
 
     let runAmountLabel;
     let runAmountInput;
     switch(droppedItemData) {
+        case "PF_Add":
+            //Function choice container
+            functionChoiceContainer = document.createElement("div");
+            functionChoiceContainer.setAttribute("data-type", "ADD");
+            //Function choice title
+            functionChoiceTitle = document.createElement("span");
+            functionChoiceTitle.textContent = "ADD: ";
+            functionChoiceTitle.classList.add("font-bold");
+            //Input one label
+            inputOneLabel = document.createElement("label");
+            inputOneLabel.textContent = "Input 1: ";
+            //Input one select
+            inputOne = createMathSelect("inputOne");
+            inputOne.addEventListener("change", (event) => {
+                let targetContainer = functionChoiceContainer.getElementsByClassName("inputOneContainer")[0];
+                updateMathInputSelection(event.target.value, targetContainer);
+            })
+            //Input two label
+            inputTwoLabel = document.createElement("label");
+            inputTwoLabel.textContent = "Input 2: ";
+            //Input two select
+            inputTwo = createMathSelect("inputTwo");
+            inputTwo.addEventListener("change", (event) => {
+                let targetContainer = functionChoiceContainer.getElementsByClassName("inputTwoContainer")[0];
+                updateMathInputSelection(event.target.value, targetContainer);
+            })
+            //Target label
+            targetLabel = document.createElement("label");
+            targetLabel.textContent = "Target: ";
+            //Target input
+            targetInput = createTargetSelect();
+            targetInput.addEventListener("change", (event) => {
+                let targetContainer = functionChoiceContainer.getElementsByClassName("targetContainer")[0];
+                updateMathTargetSelection(event.target.value, targetContainer);
+            })
+            //Selections container
+            container1 = document.createElement("div");
+            container1.classList.add("border");
+            container1.classList.add("flex");
+            container1.classList.add("justify-around");
+            //Input1 container
+            container2 = document.createElement("div");
+            container2.classList.add("inputOneContainer");
+            //Input2 container
+            container3 = document.createElement("div");
+            container3.classList.add("inputTwoContainer");
+            //Target container
+            container4 = document.createElement("div");
+            container4.classList.add("targetContainer");
+            //Put it together and assign to chosenFunction
+            functionChoiceContainer.appendChild(functionChoiceTitle);
+            functionChoiceContainer.appendChild(inputOneLabel);
+            functionChoiceContainer.appendChild(inputOne);
+            functionChoiceContainer.appendChild(inputTwoLabel);
+            functionChoiceContainer.appendChild(inputTwo);
+            functionChoiceContainer.appendChild(targetLabel);
+            functionChoiceContainer.appendChild(targetInput);
+            container1.appendChild(container2);
+            container1.appendChild(container3);
+            container1.appendChild(container4);
+            functionChoiceContainer.appendChild(container1);
+            updateMathInputSelection("input", container2);
+            updateMathInputSelection("input", container3);
+            updateMathTargetSelection("staged", container4);
+            chosenFunction = functionChoiceContainer;
+            break;
         case "PF_runPipeline":
             //Function choice container
             functionChoiceContainer = document.createElement("div");

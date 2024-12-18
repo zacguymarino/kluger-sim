@@ -82,8 +82,21 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
         {"IfSV", 7},
         {"AV", 8},
         {"RDB", 9},
-        {"RPL", 10}
+        {"RPL", 10},
+        {"ADD", 11}
     };
+    std::map<std::string, int> inputTargets = {
+        {"input", 0},
+        {"staged", 1},
+        {"variable", 2},
+        {"storage", 3}
+    };
+    std::map<std::string, int> targetTargets = {
+        {"staged", 0},
+        {"variable", 1},
+        {"storage", 2}
+    };
+
     int type = functionTable[function["type"]];
 
     std::string pipelineName;
@@ -104,6 +117,22 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
     std::vector<std::string> numList;
     std::string value;
     std::vector<std::string>::iterator it;
+    std::string inputOneTarget;
+    std::string inputTwoTarget;
+    std::string targetTarget;
+    std::string input1;
+    std::string input2;
+    // std::string inputOneInput;
+    // std::string inputOneVariable;
+    // std::string inputOneStorage;
+    // std::string inputOneStorageIndex;
+    // std::string inputTwoInput;
+    // std::string inputTwoVariable;
+    // std::string inputTwoStorage;
+    // std::string inputTwoStorageIndex;
+    // std::string targetVariable;
+    // std::string targetStorage;
+    // std::string targetStorageIndex;
     switch (type) {
         case 0:
             poolName = function["pool"];
@@ -189,7 +218,6 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
             minValue = std::stod(function["min"]);
             maxValue = std::stod(function["max"]);
             copyStruct.staged = std::to_string(randomDouble(minValue, maxValue));
-            std::cout << copyStruct.staged << std::endl;
             break;
         case 10:
             pipelineName = function["pipeline"];
@@ -198,6 +226,67 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
                 for (int j = 0; j < copyStruct.pipelines[pipelineName].size(); j++) {
                     copyStruct = pipelineFunctions(copyStruct.pipelines[pipelineName][j], copyStruct, simStruct);
                 }
+            }
+            break;
+        case 11:
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            targetTarget = function["targetTarget"];
+            switch (inputTargets[inputOneTarget]) {
+                case 0:
+                    input1 = function["inputOneInput"];
+                    break;
+                case 1:
+                    input1 = copyStruct.staged;
+                    break;
+                case 2:
+                    input1 = copyStruct.variables[function["inputOneVariable"]]["value"];
+                    break;
+                case 3:
+                    input1 = copyStruct.storage[function["inputOneStorage"]].at(std::stoi(function["inputOneStorageIndex"]));
+                    break;
+                default:
+                    input1 = "0";
+                    break;
+            }
+            switch (inputTargets[inputTwoTarget]) {
+                case 0:
+                    input2 = function["inputTwoInput"];
+                    break;
+                case 1:
+                    input2 = copyStruct.staged;
+                    break;
+                case 2:
+                    input2 = copyStruct.variables[function["inputTwoVariable"]]["value"];
+                    break;
+                case 3:
+                    input2 = copyStruct.storage[function["inputTwoStorage"]].at(std::stoi(function["inputTwoStorageIndex"]));
+                    break;
+                default:
+                    input2 = "0";
+                    break;
+            }
+            switch (targetTargets[targetTarget]) {
+                case 0:
+                    numList.push_back(input1);
+                    numList.push_back(input2);
+                    copyStruct.staged = addSubtract(numList, false);
+                    break;
+                case 1:
+                    numList.push_back(input1);
+                    numList.push_back(input2);
+                    copyStruct.variables[function["targetVariable"]]["value"] = addSubtract(numList, false);
+                    break;
+                case 2:
+                    numList.push_back(input1);
+                    numList.push_back(input2);
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = addSubtract(numList, false);
+                    break;
+                default:
+                    numList.push_back(input1);
+                    numList.push_back(input2);
+                    copyStruct.staged = addSubtract(numList, false);
+                    break;
             }
             break;
         default:
@@ -223,7 +312,6 @@ Output constructOutputStruct(SimStruct simStruct) {
 SimStruct resetVariables(SimStruct copySimStruct, SimStruct simStruct) {
     for (std::map<std::string, std::map<std::string, std::string>>::iterator it = simStruct.variables.begin(); it != simStruct.variables.end(); ++it) {
         if (it -> second["persists"] == "false") {
-
             copySimStruct.variables[it -> first]["value"] = it -> second["value"];
         }
     }
