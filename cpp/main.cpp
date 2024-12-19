@@ -70,7 +70,7 @@ double randomDouble(double min, double max) {
     return dist(gen); // Generate a random decimal
 }
 
-std::string getMathInputOne(int caseNumber, std::map<std::string, std::string> function, SimStruct copyStruct) {
+std::string getMathInputOne(int caseNumber, std::map<std::string, std::string>& function, SimStruct& copyStruct) {
     std::string input1;
     switch (caseNumber) {
         case 0:
@@ -92,7 +92,7 @@ std::string getMathInputOne(int caseNumber, std::map<std::string, std::string> f
     return input1;
 }
 
-std::string getMathInputTwo(int caseNumber, std::map<std::string, std::string> function, SimStruct copyStruct) {
+std::string getMathInputTwo(int caseNumber, std::map<std::string, std::string>& function, SimStruct& copyStruct) {
     std::string input2;
     switch (caseNumber) {
         case 0:
@@ -114,7 +114,7 @@ std::string getMathInputTwo(int caseNumber, std::map<std::string, std::string> f
     return input2;
 }
 
-SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStruct copyStruct, SimStruct simStruct) {
+SimStruct pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& copyStruct, SimStruct& simStruct) {
     std::map<std::string, int> functionTable = {
         {"RPE", 0},
         {"SPE", 10},
@@ -417,7 +417,7 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
     return copyStruct;
 }
 
-Output constructOutputStruct(SimStruct simStruct) {
+Output constructOutputStruct(SimStruct& simStruct) {
     Output simOutput;
     std::vector<std::string> storageOutputs = simStruct.output["storage"];
     std::vector<std::string> variableOutputs = simStruct.output["variables"];
@@ -430,7 +430,7 @@ Output constructOutputStruct(SimStruct simStruct) {
     return simOutput;
 }
 
-SimStruct resetVariables(SimStruct copySimStruct, SimStruct simStruct) {
+SimStruct resetVariables(SimStruct& copySimStruct, SimStruct& simStruct) {
     for (std::map<std::string, std::map<std::string, std::string>>::iterator it = simStruct.variables.begin(); it != simStruct.variables.end(); ++it) {
         if (it -> second["persists"] == "false") {
             copySimStruct.variables[it -> first]["value"] = it -> second["value"];
@@ -439,7 +439,7 @@ SimStruct resetVariables(SimStruct copySimStruct, SimStruct simStruct) {
     return copySimStruct;
 }
 
-bool checkEndCondition(EndConditionProperties endProps, std::map<std::string, std::string> endCondition) {
+bool checkEndCondition(EndConditionProperties& endProps, std::map<std::string, std::string>& endCondition) {
     std::map<std::string, int> endConditionTable = {
         {"MPR", 0}
     };
@@ -455,7 +455,7 @@ bool checkEndCondition(EndConditionProperties endProps, std::map<std::string, st
     return false;
 }
 
-Output runSimulation(SimStruct simStruct) {
+Output runSimulation(SimStruct& simStruct) {
     SimStruct copySimStruct = simStruct;
     EndConditionProperties endProps;
     bool endSimulation = false;
