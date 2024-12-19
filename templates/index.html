@@ -14,8 +14,8 @@
             <div class="ballCenter"></div>
         </div>
     </div>
-    <div class="w-full flex justify-between">
-        <div class="w-2-3">
+    <div class="w-full flex justify-between h-95 scroll-none">
+        <div class="w-2-3 h-95 scroll-y">
             <h3>Pools</h3>
             <button id="addPool">Add Pool</button>
             <div id="pools"></div>
@@ -43,7 +43,7 @@
             <h3>Simulate</h3>
             <button id="simulate">Simulate</button>
         </div>
-        <div class="w-1-3 relative h-full">
+        <div class="w-1-3 relative h-95 scroll-y">
             <h3>Pipeline Functions</h3>
             <div>
                 <h4>Pool functions</h4>
@@ -59,9 +59,15 @@
                 <div class="draggable-item" draggable="true" data-info="PF_getLastElement">Get Last Element (GLE)</div>
                 <div class="draggable-item" draggable="true" data-info="PF_getNthElement">Get Nth Element (GNE)</div>
                 <h4>Variable functions</h4>
-                <div class="draggable-item" draggable="true" data-info="PF_addToVariable">Add to Variable (AV)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_assignVariable">Assign Variable (AV)</div>
                 <h4>Math functions</h4>
-                <div class="draggable-item" draggable="true" data-info="PF_Add">Addition (ADD)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_Add">Add (ADD)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_Subtract">Subtract (SUB)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_Multiply">Multiply (MUL)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_Divide">Divide (DIV)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_Exponentiate">Exponentiate (EXP)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_Root">Root (ROOT)</div>
+                <div class="draggable-item" draggable="true" data-info="PF_ifGreaterThan">If Greater Than (IfGT)</div>
                 <h4>Pipeline functions</h4>
                 <div class="draggable-item" draggable="true" data-info="PF_runPipeline">Run Pipeline (RPL)</div>
             </div>

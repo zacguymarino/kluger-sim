@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <map>
 #include <string>
-#include "math.h"
+#include <cmath>
 #include <emscripten/bind.h>
 
 struct PoolData {
@@ -70,20 +70,70 @@ double randomDouble(double min, double max) {
     return dist(gen); // Generate a random decimal
 }
 
+std::string getMathInputOne(int caseNumber, std::map<std::string, std::string> function, SimStruct copyStruct) {
+    std::string input1;
+    switch (caseNumber) {
+        case 0:
+            input1 = function["inputOneInput"];
+            break;
+        case 1:
+            input1 = copyStruct.staged;
+            break;
+        case 2:
+            input1 = copyStruct.variables[function["inputOneVariable"]]["value"];
+            break;
+        case 3:
+            input1 = copyStruct.storage[function["inputOneStorage"]].at(std::stoi(function["inputOneStorageIndex"]));
+            break;
+        default:
+            input1 = "0";
+            break;
+    }
+    return input1;
+}
+
+std::string getMathInputTwo(int caseNumber, std::map<std::string, std::string> function, SimStruct copyStruct) {
+    std::string input2;
+    switch (caseNumber) {
+        case 0:
+            input2 = function["inputTwoInput"];
+            break;
+        case 1:
+            input2 = copyStruct.staged;
+            break;
+        case 2:
+            input2 = copyStruct.variables[function["inputTwoVariable"]]["value"];
+            break;
+        case 3:
+            input2 = copyStruct.storage[function["inputTwoStorage"]].at(std::stoi(function["inputTwoStorageIndex"]));
+            break;
+        default:
+            input2 = "0";
+            break;
+    }
+    return input2;
+}
+
 SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStruct copyStruct, SimStruct simStruct) {
     std::map<std::string, int> functionTable = {
         {"RPE", 0},
-        {"SPE", 1},
-        {"RP", 2},
-        {"AS", 3},
-        {"GFE", 4},
-        {"GLE", 5},
-        {"GNE", 6},
-        {"IfSV", 7},
-        {"AV", 8},
-        {"RDB", 9},
-        {"RPL", 10},
-        {"ADD", 11}
+        {"SPE", 10},
+        {"RP", 20},
+        {"AS", 30},
+        {"GFE", 40},
+        {"GLE", 50},
+        {"GNE", 60},
+        {"IfSV", 70},
+        {"IfGT", 72},
+        {"RDB", 80},
+        {"AV", 82},
+        {"RPL", 90},
+        {"ADD", 100},
+        {"SUB", 110},
+        {"MUL", 120},
+        {"DIV", 130},
+        {"EXP", 140},
+        {"ROOT", 150}
     };
     std::map<std::string, int> inputTargets = {
         {"input", 0},
@@ -114,7 +164,6 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
     std::string variableValue;
     double minValue;
     double maxValue;
-    std::vector<std::string> numList;
     std::string value;
     std::vector<std::string>::iterator it;
     std::string inputOneTarget;
@@ -122,17 +171,6 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
     std::string targetTarget;
     std::string input1;
     std::string input2;
-    // std::string inputOneInput;
-    // std::string inputOneVariable;
-    // std::string inputOneStorage;
-    // std::string inputOneStorageIndex;
-    // std::string inputTwoInput;
-    // std::string inputTwoVariable;
-    // std::string inputTwoStorage;
-    // std::string inputTwoStorageIndex;
-    // std::string targetVariable;
-    // std::string targetStorage;
-    // std::string targetStorageIndex;
     switch (type) {
         case 0:
             poolName = function["pool"];
@@ -141,7 +179,7 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
             copyStruct.staged = pools[poolName].elements[randomIndex];
             if (replace == "false") pools[poolName].elements.erase(pools[poolName].elements.begin() + randomIndex);
             break;
-        case 1:
+        case 10:
             poolName = function["pool"];
             replace = function["replace"];
             poolElement = function["element"];
@@ -154,11 +192,11 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
                 copyStruct.error = "Specific element not found in specified pool.";
             }
             break;
-        case 2:
+        case 20:
             poolName = function["pool"];
             pools[poolName] = simStruct.pools[poolName];
             break;
-        case 3:
+        case 30:
             storageName = function["storage"];
             if (copyStruct.staged != "") {
                 copyStruct.storage[storageName].push_back(copyStruct.staged);
@@ -166,7 +204,7 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
                 copyStruct.error = "The staged value is empty - you cannot store an empty value in storage.";
             }
             break;
-        case 4:
+        case 40:
             storageName = function["storage"];
             if (copyStruct.storage[storageName].size() > 0) {
                 copyStruct.staged = copyStruct.storage[storageName][0];
@@ -174,7 +212,7 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
                 copyStruct.error = "The storage you selected is empty - there is no first element.";
             }
             break;
-        case 5:
+        case 50:
             storageName = function["storage"];
             if (copyStruct.storage[storageName].size() > 0) {
                 copyStruct.staged = copyStruct.storage[storageName][copyStruct.storage[storageName].size() - 1];
@@ -182,7 +220,7 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
                 copyStruct.error = "The storage you selected is empty - there is no last element.";
             }
             break;
-        case 6:
+        case 60:
             storageName = function["storage"];
             storageElement = function["element"];
             if (copyStruct.storage[storageName].size() - 1 >= std::stoi(storageElement)) {
@@ -191,7 +229,7 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
                 copyStruct.error = "The storage you selected is smaller than the element you want from it - there is no Nth element.";
             }
             break;
-        case 7:
+        case 70:
             truePipelineName = function["true"];
             falsePipelineName = function["false"];
             value = function["value"];
@@ -205,21 +243,35 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
                 }
             }
             break;
-        case 8:
-            variableName = function["variable"];
-            variableValue = copyStruct.variables[variableName]["value"];
-            value = function["value"];
-            numList.clear();
-            numList.push_back(variableValue);
-            numList.push_back(value);
-            copyStruct.variables[variableName]["value"] = addSubtract(numList, false);
+        case 72:
+            truePipelineName = function["true"];
+            falsePipelineName = function["false"];
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            if (std::stod(input1) > std::stod(input2)) {
+                for (int i = 0; i < copyStruct.pipelines[truePipelineName].size(); i++) {
+                    copyStruct = pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
+                }
+            } else {
+                for (int i = 0; i < copyStruct.pipelines[falsePipelineName].size(); i++) {
+                    copyStruct = pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
+                }
+            }
             break;
-        case 9:
+        case 80:
             minValue = std::stod(function["min"]);
             maxValue = std::stod(function["max"]);
             copyStruct.staged = std::to_string(randomDouble(minValue, maxValue));
             break;
-        case 10:
+        case 82:
+            input1 = function["inputOneValue"];
+            inputTwoTarget = function["inputTwoTarget"];
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            copyStruct.variables[input1]["value"] = input2;
+            break;
+        case 90:
             pipelineName = function["pipeline"];
             value = function["runs"];
             for (int i = 0; i < std::stoi(value); i++) {
@@ -228,64 +280,133 @@ SimStruct pipelineFunctions(std::map<std::string, std::string> function, SimStru
                 }
             }
             break;
-        case 11:
+        case 100:
             inputOneTarget = function["inputOneTarget"];
             inputTwoTarget = function["inputTwoTarget"];
             targetTarget = function["targetTarget"];
-            switch (inputTargets[inputOneTarget]) {
-                case 0:
-                    input1 = function["inputOneInput"];
-                    break;
-                case 1:
-                    input1 = copyStruct.staged;
-                    break;
-                case 2:
-                    input1 = copyStruct.variables[function["inputOneVariable"]]["value"];
-                    break;
-                case 3:
-                    input1 = copyStruct.storage[function["inputOneStorage"]].at(std::stoi(function["inputOneStorageIndex"]));
-                    break;
-                default:
-                    input1 = "0";
-                    break;
-            }
-            switch (inputTargets[inputTwoTarget]) {
-                case 0:
-                    input2 = function["inputTwoInput"];
-                    break;
-                case 1:
-                    input2 = copyStruct.staged;
-                    break;
-                case 2:
-                    input2 = copyStruct.variables[function["inputTwoVariable"]]["value"];
-                    break;
-                case 3:
-                    input2 = copyStruct.storage[function["inputTwoStorage"]].at(std::stoi(function["inputTwoStorageIndex"]));
-                    break;
-                default:
-                    input2 = "0";
-                    break;
-            }
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            value = std::to_string(std::stod(input1) + std::stod(input2));
             switch (targetTargets[targetTarget]) {
                 case 0:
-                    numList.push_back(input1);
-                    numList.push_back(input2);
-                    copyStruct.staged = addSubtract(numList, false);
+                    copyStruct.staged = value;
                     break;
                 case 1:
-                    numList.push_back(input1);
-                    numList.push_back(input2);
-                    copyStruct.variables[function["targetVariable"]]["value"] = addSubtract(numList, false);
+                    copyStruct.variables[function["targetVariable"]]["value"] = value;
                     break;
                 case 2:
-                    numList.push_back(input1);
-                    numList.push_back(input2);
-                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = addSubtract(numList, false);
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = value;
                     break;
                 default:
-                    numList.push_back(input1);
-                    numList.push_back(input2);
-                    copyStruct.staged = addSubtract(numList, false);
+                    copyStruct.staged = value;
+                    break;
+            }
+            break;
+        case 110:
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            targetTarget = function["targetTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            value = std::to_string(std::stod(input1) - std::stod(input2));
+            switch (targetTargets[targetTarget]) {
+                case 0:
+                    copyStruct.staged = value;
+                    break;
+                case 1:
+                    copyStruct.variables[function["targetVariable"]]["value"] = value;
+                    break;
+                case 2:
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = value;
+                    break;
+                default:
+                    copyStruct.staged = value;
+                    break;
+            }
+            break;
+        case 120:
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            targetTarget = function["targetTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            value = std::to_string(std::stod(input1) * std::stod(input2));
+            switch (targetTargets[targetTarget]) {
+                case 0:
+                    copyStruct.staged = value;
+                    break;
+                case 1:
+                    copyStruct.variables[function["targetVariable"]]["value"] = value;
+                    break;
+                case 2:
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = value;
+                    break;
+                default:
+                    copyStruct.staged = value;
+                    break;
+            }
+            break;
+        case 130:
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            targetTarget = function["targetTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            value = std::to_string(std::stod(input1) / std::stod(input2));
+            switch (targetTargets[targetTarget]) {
+                case 0:
+                    copyStruct.staged = value;
+                    break;
+                case 1:
+                    copyStruct.variables[function["targetVariable"]]["value"] = value;
+                    break;
+                case 2:
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = value;
+                    break;
+                default:
+                    copyStruct.staged = value;
+                    break;
+            }
+            break;
+        case 140:
+            inputOneTarget = function["inputOneTarget"];
+            targetTarget = function["targetTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = function["expRoot"];
+            value = std::to_string(pow(std::stod(input1), std::stod(input2)));
+            switch (targetTargets[targetTarget]) {
+                case 0:
+                    copyStruct.staged = value;
+                    break;
+                case 1:
+                    copyStruct.variables[function["targetVariable"]]["value"] = value;
+                    break;
+                case 2:
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = value;
+                    break;
+                default:
+                    copyStruct.staged = value;
+                    break;
+            }
+            break;
+        case 150:
+            inputOneTarget = function["inputOneTarget"];
+            targetTarget = function["targetTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = function["expRoot"];
+            value = std::to_string(pow(std::stod(input1), 1.0 / std::stod(input2)));
+            switch (targetTargets[targetTarget]) {
+                case 0:
+                    copyStruct.staged = value;
+                    break;
+                case 1:
+                    copyStruct.variables[function["targetVariable"]]["value"] = value;
+                    break;
+                case 2:
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = value;
+                    break;
+                default:
+                    copyStruct.staged = value;
                     break;
             }
             break;

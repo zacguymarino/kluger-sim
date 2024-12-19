@@ -54,6 +54,18 @@
     height: 100vh;
 }
 
+.h-95 {
+    height: 95vh;
+}
+
+.scroll-y {
+    overflow-y: scroll;
+}
+
+.scroll-none {
+    overflow-y: none;
+}
+
 .z-1 {
     z-index: 1;
 }
