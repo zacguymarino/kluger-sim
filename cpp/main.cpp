@@ -112,7 +112,7 @@ std::string getMathInputTwo(int caseNumber, std::map<std::string, std::string>& 
     return input2;
 }
 
-SimStruct pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& copyStruct, SimStruct& simStruct) {
+void pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& copyStruct, SimStruct& simStruct) {
     std::map<std::string, int> functionTable = {
         {"RPE", 0},
         {"SPE", 10},
@@ -233,11 +233,11 @@ SimStruct pipelineFunctions(std::map<std::string, std::string>& function, SimStr
             value = function["value"];
             if (copyStruct.staged == value) {
                 for (int i = 0; i < copyStruct.pipelines[truePipelineName].size(); i++) {
-                    copyStruct = pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
+                    pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
                 }
             } else {
                 for (int i = 0; i < copyStruct.pipelines[falsePipelineName].size(); i++) {
-                    copyStruct = pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
+                    pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
                 }
             }
             break;
@@ -250,11 +250,11 @@ SimStruct pipelineFunctions(std::map<std::string, std::string>& function, SimStr
             input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
             if (std::stod(input1) > std::stod(input2)) {
                 for (int i = 0; i < copyStruct.pipelines[truePipelineName].size(); i++) {
-                    copyStruct = pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
+                    pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
                 }
             } else {
                 for (int i = 0; i < copyStruct.pipelines[falsePipelineName].size(); i++) {
-                    copyStruct = pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
+                    pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
                 }
             }
             break;
@@ -274,7 +274,7 @@ SimStruct pipelineFunctions(std::map<std::string, std::string>& function, SimStr
             value = function["runs"];
             for (int i = 0; i < std::stoi(value); i++) {
                 for (int j = 0; j < copyStruct.pipelines[pipelineName].size(); j++) {
-                    copyStruct = pipelineFunctions(copyStruct.pipelines[pipelineName][j], copyStruct, simStruct);
+                    pipelineFunctions(copyStruct.pipelines[pipelineName][j], copyStruct, simStruct);
                 }
             }
             break;
@@ -412,7 +412,6 @@ SimStruct pipelineFunctions(std::map<std::string, std::string>& function, SimStr
             copyStruct.error = "An invalid function was found in the pipeline.";
             break;
     }
-    return copyStruct;
 }
 
 Output constructOutputStruct(SimStruct& simStruct) {
@@ -428,13 +427,12 @@ Output constructOutputStruct(SimStruct& simStruct) {
     return simOutput;
 }
 
-SimStruct resetVariables(SimStruct& copySimStruct, SimStruct& simStruct) {
+void resetVariables(SimStruct& copySimStruct, SimStruct& simStruct) {
     for (std::map<std::string, std::map<std::string, std::string>>::iterator it = simStruct.variables.begin(); it != simStruct.variables.end(); ++it) {
         if (it -> second["persists"] == "false") {
             copySimStruct.variables[it -> first]["value"] = it -> second["value"];
         }
     }
-    return copySimStruct;
 }
 
 bool checkEndCondition(EndConditionProperties& endProps, std::map<std::string, std::string>& endCondition) {
@@ -463,10 +461,10 @@ Output runSimulation(SimStruct& simStruct) {
 
     while (!endSimulation) {
         for (int i = 0; i < mainPipeline.size(); i++) {
-            copySimStruct = pipelineFunctions(mainPipeline[i], copySimStruct, simStruct);
+            pipelineFunctions(mainPipeline[i], copySimStruct, simStruct);
         }
         //Reset variables (if not persistent)
-        copySimStruct = resetVariables(copySimStruct, simStruct);
+        resetVariables(copySimStruct, simStruct);
         //Add 1 to main pipeline runs
         endProps.mainRuns++;
         //Update endSimulation properties
