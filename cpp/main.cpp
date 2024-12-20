@@ -48,26 +48,24 @@ struct EndConditionProperties {
     }
 };
 
-int randomInt(int max) {
-    // Seed with a random device for true randomness.
-    static std::random_device rd;  
-    static std::mt19937 gen(rd()); // Mersenne Twister generator seeded with rd.
-    
+std::mt19937& getGenerator() {
+    static std::random_device rd;              // Seed only once.
+    static std::mt19937 gen(rd());             // Shared generator.
+    return gen;
+}
+
+int randomInt(int max) {    
     // Create a uniform distribution in the range [0, max].
-    std::uniform_int_distribution<int> dist(0, max);
+    static std::uniform_int_distribution<int> dist(0, max);
     
-    return dist(gen); // Generate a random number.
+    return dist(getGenerator()); // Generate a random number.
 }
 
 double randomDouble(double min, double max) {
-    // Seed with a random device for true randomness.
-    static std::random_device rd;  
-    static std::mt19937 gen(rd()); // Mersenne Twister generator seeded with rd.
-
     // Create a uniform distribution in the range [0, max].
-    std::uniform_real_distribution<double> dist(min, max);
+    static std::uniform_real_distribution<double> dist(min, max);
 
-    return dist(gen); // Generate a random decimal
+    return dist(getGenerator()); // Generate a random decimal
 }
 
 std::string getMathInputOne(int caseNumber, std::map<std::string, std::string>& function, SimStruct& copyStruct) {
