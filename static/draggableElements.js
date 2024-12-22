@@ -1,4 +1,4 @@
-const constructInequalityObject = function(element, functionTitle) {
+const constructComparisonObject = function(element, functionTitle) {
     let inputOneTarget;
     let inputTwoTarget;
     let inputOneInput;
@@ -351,7 +351,7 @@ const constructDraggableObjects = function(element) {
     let runsValue;
     switch(functionType) {
         case "IfGT":
-            object = constructInequalityObject(element, "IfGT");
+            object = constructComparisonObject(element, "IfGT");
             break;
         case "AV":
             object = constructSingleAssignmentObject(element, "AV");

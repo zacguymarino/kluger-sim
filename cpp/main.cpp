@@ -56,14 +56,14 @@ std::mt19937& getGenerator() {
 
 int randomInt(int max) {    
     // Create a uniform distribution in the range [0, max].
-    static std::uniform_int_distribution<int> dist(0, max);
+    std::uniform_int_distribution<int> dist(0, max);
     
     return dist(getGenerator()); // Generate a random number.
 }
 
 double randomDouble(double min, double max) {
     // Create a uniform distribution in the range [0, max].
-    static std::uniform_real_distribution<double> dist(min, max);
+    std::uniform_real_distribution<double> dist(min, max);
 
     return dist(getGenerator()); // Generate a random decimal
 }
@@ -192,7 +192,7 @@ void pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& 
             break;
         case 20:
             poolName = function["pool"];
-            pools[poolName] = simStruct.pools[poolName];
+            pools[poolName].elements = simStruct.pools[poolName].elements;
             break;
         case 30:
             storageName = function["storage"];
