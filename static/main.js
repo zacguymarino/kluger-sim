@@ -99,17 +99,13 @@ const runSimulation = function() {
 const buildSimStruct = function() {
     //Pools conversion
     let poolsObject = simObj.pools;
-    let poolMap = new simModule.MapStringPoolData;
+    let poolMap = new simModule.MapStringVectorString;
     Object.keys(poolsObject).forEach(key => {
-        let poolData = new simModule.PoolData();
         let elementVector = new simModule.VectorString;
         for (let i = 0; i < poolsObject[key].elements.length; i++) {
             elementVector.push_back(poolsObject[key].elements[i]);
         }
-        let poolTable = poolsObject[key].table;
-        poolData.elements = elementVector;
-        poolData.table = poolTable;
-        poolMap.set(key, poolData);
+        poolMap.set(key, elementVector);
     });
     simStruct.pools = poolMap;
 
@@ -219,7 +215,6 @@ const buildSimObject = function() {
         let poolIdNumber = pools[i].id.match(/^[a-zA-Z]+-(\d+)$/)[1];
         let poolName = pools[i].querySelector(`#poolName-${poolIdNumber}`).value;
         let poolType = pools[i].querySelector(`#poolType-${poolIdNumber}`).dataset.pooltype;
-        let poolTableName = "";
         let poolSize;
         let poolElements;
         let min;
@@ -241,21 +236,16 @@ const buildSimObject = function() {
                 simObj.pools[poolName] = {
                     size: poolSize,
                     elements: poolElements,
-                    type: "interpolated",
-                    table: poolTableName
+                    type: "interpolated"
                 }
                 break;
             case "manual":
                 poolSize = pools[i].querySelector(`#poolSize-${poolIdNumber}`).value;
                 poolElements = document.getElementById(`poolElements-${poolIdNumber}`).children;
-                if (pools[i].querySelector(`#poolTableCheckbox-${poolIdNumber}`).checked) {
-                    poolTableName = pools[i].querySelector(`#poolTableName-${poolIdNumber}`).value;
-                }
                 simObj.pools[poolName] = {
                     size: poolSize,
                     elements: [],
-                    type: "manual",
-                    table: poolTableName
+                    type: "manual"
                 }
                 for (let j = 0; j < poolElements.length; j++) {
                     simObj.pools[poolName].elements.push(poolElements[j].value);

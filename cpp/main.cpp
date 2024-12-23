@@ -8,16 +8,9 @@
 #include <cmath>
 #include <emscripten/bind.h>
 
-struct PoolData {
-    //Pool elements
-    std::vector<std::string> elements;
-    //Connected Lookup Table
-    std::string table;
-};
-
 struct SimStruct {
     //pools: poolName: {attributes}
-    std::map<std::string, PoolData> pools;
+    std::map<std::string, std::vector<std::string>> pools;
     //tables: tableName: {values}
     std::map<std::string, std::map<std::string, std::vector<std::string>>> tables;
     //storage: storageName: {values}
@@ -117,12 +110,17 @@ void pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& 
         {"RPE", 0},
         {"SPE", 10},
         {"RP", 20},
+        {"GTE", 25},
         {"AS", 30},
         {"GFE", 40},
         {"GLE", 50},
         {"GNE", 60},
-        {"IfSV", 70},
+        {"IfET", 70},
+        {"IfNET", 71},
         {"IfGT", 72},
+        {"IfLT", 73},
+        {"IfGE", 74},
+        {"IfLE", 75},
         {"RDB", 80},
         {"AV", 82},
         {"RPL", 90},
@@ -149,13 +147,14 @@ void pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& 
 
     std::string pipelineName;
     std::string poolName;
-    std::map<std::string, PoolData>& pools = copyStruct.pools;
+    std::string tableName;
     std::string replace;
     std::string poolElement;
     std::string storageName;
     std::string storageElement;
     int randomIndex;
     int foundIndex;
+    int valueIndex;
     std::string truePipelineName;
     std::string falsePipelineName;
     std::string variableName;
@@ -173,26 +172,48 @@ void pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& 
         case 0:
             poolName = function["pool"];
             replace = function["replace"];
-            randomIndex = randomInt(pools[poolName].elements.size() - 1);
-            copyStruct.staged = pools[poolName].elements[randomIndex];
-            if (replace == "false") pools[poolName].elements.erase(pools[poolName].elements.begin() + randomIndex);
+            randomIndex = randomInt(copyStruct.pools[poolName].size() - 1);
+            copyStruct.staged = copyStruct.pools[poolName][randomIndex];
+            if (replace == "false") copyStruct.pools[poolName].erase(copyStruct.pools[poolName].begin() + randomIndex);
             break;
         case 10:
             poolName = function["pool"];
             replace = function["replace"];
             poolElement = function["element"];
-            it = std::find(pools[poolName].elements.begin(), pools[poolName].elements.end(), poolElement);
-            if (it != pools[poolName].elements.end()) {
-                foundIndex = std::distance(pools[poolName].elements.begin(), it);
-                copyStruct.staged = pools[poolName].elements[foundIndex];
-                if (replace == "false") pools[poolName].elements.erase(pools[poolName].elements.begin() + foundIndex);
+            it = std::find(copyStruct.pools[poolName].begin(), copyStruct.pools[poolName].end(), poolElement);
+            if (it != copyStruct.pools[poolName].end()) {
+                foundIndex = std::distance(copyStruct.pools[poolName].begin(), it);
+                copyStruct.staged = copyStruct.pools[poolName][foundIndex];
+                if (replace == "false") copyStruct.pools[poolName].erase(copyStruct.pools[poolName].begin() + foundIndex);
             } else {
                 copyStruct.error = "Specific element not found in specified pool.";
             }
             break;
         case 20:
             poolName = function["pool"];
-            pools[poolName].elements = simStruct.pools[poolName].elements;
+            copyStruct.pools[poolName] = simStruct.pools[poolName];
+            break;
+        case 25:
+            tableName = function["tableName"];
+            valueIndex = std::stoi(function["valueIndex"]);
+            inputOneTarget = function["inputOneTarget"];
+            targetTarget = function["targetTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            value = copyStruct.tables[tableName][input1][valueIndex];
+            switch (targetTargets[targetTarget]) {
+                case 0:
+                    copyStruct.staged = value;
+                    break;
+                case 1:
+                    copyStruct.variables[function["targetVariable"]]["value"] = value;
+                    break;
+                case 2:
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = value;
+                    break;
+                default:
+                    copyStruct.staged = value;
+                    break;
+            }
             break;
         case 30:
             storageName = function["storage"];
@@ -230,8 +251,28 @@ void pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& 
         case 70:
             truePipelineName = function["true"];
             falsePipelineName = function["false"];
-            value = function["value"];
-            if (copyStruct.staged == value) {
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            if (std::stod(input1) == std::stod(input2)) {
+                for (int i = 0; i < copyStruct.pipelines[truePipelineName].size(); i++) {
+                    pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
+                }
+            } else {
+                for (int i = 0; i < copyStruct.pipelines[falsePipelineName].size(); i++) {
+                    pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
+                }
+            }
+            break;
+        case 71:
+            truePipelineName = function["true"];
+            falsePipelineName = function["false"];
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            if (std::stod(input1) != std::stod(input2)) {
                 for (int i = 0; i < copyStruct.pipelines[truePipelineName].size(); i++) {
                     pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
                 }
@@ -258,16 +299,80 @@ void pipelineFunctions(std::map<std::string, std::string>& function, SimStruct& 
                 }
             }
             break;
+        case 73:
+            truePipelineName = function["true"];
+            falsePipelineName = function["false"];
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            if (std::stod(input1) < std::stod(input2)) {
+                for (int i = 0; i < copyStruct.pipelines[truePipelineName].size(); i++) {
+                    pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
+                }
+            } else {
+                for (int i = 0; i < copyStruct.pipelines[falsePipelineName].size(); i++) {
+                    pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
+                }
+            }
+            break;
+        case 74:
+            truePipelineName = function["true"];
+            falsePipelineName = function["false"];
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            if (std::stod(input1) >= std::stod(input2)) {
+                for (int i = 0; i < copyStruct.pipelines[truePipelineName].size(); i++) {
+                    pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
+                }
+            } else {
+                for (int i = 0; i < copyStruct.pipelines[falsePipelineName].size(); i++) {
+                    pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
+                }
+            }
+            break;
+        case 75:
+            truePipelineName = function["true"];
+            falsePipelineName = function["false"];
+            inputOneTarget = function["inputOneTarget"];
+            inputTwoTarget = function["inputTwoTarget"];
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
+            if (std::stod(input1) <= std::stod(input2)) {
+                for (int i = 0; i < copyStruct.pipelines[truePipelineName].size(); i++) {
+                    pipelineFunctions(copyStruct.pipelines[truePipelineName][i], copyStruct, simStruct);
+                }
+            } else {
+                for (int i = 0; i < copyStruct.pipelines[falsePipelineName].size(); i++) {
+                    pipelineFunctions(copyStruct.pipelines[falsePipelineName][i], copyStruct, simStruct);
+                }
+            }
+            break;
         case 80:
             minValue = std::stod(function["min"]);
             maxValue = std::stod(function["max"]);
             copyStruct.staged = std::to_string(randomDouble(minValue, maxValue));
             break;
         case 82:
-            input1 = function["inputOneValue"];
-            inputTwoTarget = function["inputTwoTarget"];
-            input2 = getMathInputTwo(inputTargets[inputTwoTarget], function, copyStruct);
-            copyStruct.variables[input1]["value"] = input2;
+            targetTarget = function["targetTarget"];
+            inputOneTarget = function["inputOneTarget"]; 
+            input1 = getMathInputOne(inputTargets[inputOneTarget], function, copyStruct);
+            switch (targetTargets[targetTarget]) {
+                case 0:
+                    copyStruct.staged = input1;
+                    break;
+                case 1:
+                    copyStruct.variables[function["targetVariable"]]["value"] = input1;
+                    break;
+                case 2:
+                    copyStruct.storage[function["targetStorage"]].at(std::stoi(function["targetStorageIndex"])) = input1;
+                    break;
+                default:
+                    copyStruct.staged = input1;
+                    break;
+            }
             break;
         case 90:
             pipelineName = function["pipeline"];
@@ -483,12 +588,7 @@ EMSCRIPTEN_BINDINGS(SimModule) {
     emscripten::register_vector<std::map<std::string, std::string>>("VectorMapStringString");
     emscripten::register_map<std::string, std::vector<std::map<std::string, std::string>>>("MapStringVectorMapStringString");
     emscripten::register_map<std::string, std::map<std::string, std::vector<std::string>>>("MapStringMapStringVectorString");
-    emscripten::register_map<std::string, PoolData>("MapStringPoolData");
 
-    emscripten::class_<PoolData>("PoolData")
-        .constructor<>()
-        .property("elements", &PoolData::elements)
-        .property("table", &PoolData::table);
     emscripten::class_<SimStruct>("SimStruct")
         .constructor<>()
         .property("pools", &SimStruct::pools)

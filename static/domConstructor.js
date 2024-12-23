@@ -58,23 +58,6 @@ draggableItems.forEach(item => {
 /////Sim Tool Functions/////
 ////////////////////////////
 
-const addLookupTableInput = function(idNumber) {
-    let lookupTableContainer = document.getElementById(`poolTable-${idNumber}`);
-    let tableInputContainer = document.createElement("div");
-    tableInputContainer.setAttribute("id", `poolTableInputContainer-${idNumber}`);
-    let tableInputLabel = document.createElement("label");
-    tableInputLabel.textContent = "Table: ";
-    let tableInputInput = document.createElement("input");
-    tableInputInput.setAttribute("id", `poolTableName-${idNumber}`);
-    tableInputContainer.appendChild(tableInputLabel);
-    tableInputContainer.appendChild(tableInputInput);
-    lookupTableContainer.appendChild(tableInputContainer);
-}
-
-const removeLookupTableInput = function(idNumber) {
-    document.getElementById(`poolTableInputContainer-${idNumber}`).remove();
-}
-
 const interpolatedPool = function(newIdNumber) {
     //Interpolated pool container
     let interpolatedContainer = document.createElement("div");
@@ -133,23 +116,6 @@ const manualPool = function(newIdNumber) {
     let manualContainer = document.createElement("div");
     manualContainer.setAttribute("id", `poolType-${newIdNumber}`);
     manualContainer.setAttribute("data-pooltype", "manual");
-    //Lookup table container
-    let lookupTableContainer = document.createElement("div");
-    lookupTableContainer.setAttribute("id", `poolTable-${newIdNumber}`);
-    //Lookup table checkbox label
-    let lookupTableCheckboxLabel = document.createElement("label");
-    lookupTableCheckboxLabel.textContent = "Lookup table: ";
-    //Lookup table checkbox
-    let lookupTableCheckbox = document.createElement("input");
-    lookupTableCheckbox.setAttribute("type", "checkbox");
-    lookupTableCheckbox.setAttribute("id", `poolTableCheckbox-${newIdNumber}`);
-    lookupTableCheckbox.addEventListener("change", (event) => {
-        if (event.target.checked) {
-            addLookupTableInput(newIdNumber);
-        } else {
-            removeLookupTableInput(newIdNumber);
-        }
-    });
     //Pool size container
     let poolSizeContainer = document.createElement("div");
     //Pool size label
@@ -168,9 +134,6 @@ const manualPool = function(newIdNumber) {
     let elementContainer = document.createElement('div');
     elementContainer.setAttribute('id', `poolElements-${newIdNumber}`);
     //Put it all together
-    lookupTableContainer.appendChild(lookupTableCheckboxLabel);
-    lookupTableContainer.appendChild(lookupTableCheckbox);
-    manualContainer.appendChild(lookupTableContainer);
     poolSizeContainer.appendChild(poolSizeLabel);
     poolSizeContainer.appendChild(poolSizeInput);
     poolSizeContainer.appendChild(elementContainer);
